@@ -19,7 +19,10 @@ class UserDaoTest {
     void addAndGet() throws SQLException, ClassNotFoundException {
         //DaoFactory daoFactory = new DaoFactory();
         UserDao userDao = context.getBean("userDao", UserDao.class);
-        userDao.add(new User("4","yejin","1234"));
-        assertEquals("Mimi",userDao.findById("3").getName());
+        userDao.deleteAll();
+        assertEquals(0,userDao.getCount());
+        userDao.add(new User("1","yejin","1234"));
+        assertEquals("yejin",userDao.findById("1").getName());
+        assertEquals(1,userDao.getCount());
     }
 }
