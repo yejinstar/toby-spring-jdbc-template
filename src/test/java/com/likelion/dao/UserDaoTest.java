@@ -12,8 +12,9 @@ class UserDaoTest {
     @Test
     @DisplayName("add and get success?")
     void addAndGet() throws SQLException, ClassNotFoundException {
-        UserDao userDao = new UserDao();
-        userDao.add(new User("14","yejin","1234"));
-        assertEquals("yejin",userDao.findById("12").getName());
+        DaoFactory daoFactory = new DaoFactory();
+        UserDao userDao = daoFactory.userDao();
+        userDao.add(new User("13","yejin","1234"));
+        assertEquals("Mimi",userDao.findById("3").getName());
     }
 }
