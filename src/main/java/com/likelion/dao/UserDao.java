@@ -48,8 +48,20 @@ public class UserDao {
     }
 
     public void add (User user) throws ClassNotFoundException, SQLException{
-        AddStrategy addStrategy = new AddStrategy(user);
-        jdbcContextWithStatementStrategy(addStrategy);
+        jdbcContextWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO users(id, name, password) values(?, ?, ?)");
+                ps.setString(1, user.getId());
+                ps.setString(2, user.getName());
+                ps.setString(3, user.getPassword());
+                return ps;
+            }
+        });
+
+        /*AddStrategy addStrategy = new AddStrategy(user);
+        jdbcContextWithStatementStrategy(addStrategy);*/
 
         /*jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
@@ -95,9 +107,16 @@ public class UserDao {
     }
 
     public void deleteAll() throws ClassNotFoundException, SQLException{
+        jdbcContextWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                return connection.prepareStatement("delete from users");
+            }
+        });
 
-        DeleteAllStrategy deleteAllStrategy = new DeleteAllStrategy();
-        jdbcContextWithStatementStrategy(deleteAllStrategy);
+        /*DeleteAllStrategy deleteAllStrategy = new DeleteAllStrategy();
+        jdbcContextWithStatementStrategy(deleteAllStrategy);*/
+
         /*jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
