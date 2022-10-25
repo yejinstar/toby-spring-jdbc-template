@@ -3,26 +3,48 @@ package com.likelion.dao;
 import com.likelion.domain.User;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Map;
 
 public class UserDao {
-
+    private DataSource dataSource;
     private ConnectionMaker connectionMaker;
 
     public UserDao() {
         this.connectionMaker = new LocalConnectionMaker();
     }
+
+    public UserDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     public UserDao(ConnectionMaker connectionMaker) {
         this.connectionMaker = connectionMaker;
     }
 
     public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException, ClassNotFoundException {
-        Connection c = connectionMaker.makeConnection();
-        PreparedStatement pstmt = stmt.makePreparedStatement(c);
-        pstmt.executeUpdate();
-        pstmt.close();
-        c.close();
+        Connection c = null;
+        PreparedStatement pstmt = null;
+
+        try{
+            c = dataSource.getConnection();
+            pstmt = stmt.makePreparedStatement(c);
+            pstmt.executeUpdate();
+        } catch (SQLException e){
+            throw e;
+        }finally {
+            if(pstmt != null){
+                try{
+                    pstmt.close();
+                } catch (SQLException e){}
+            }
+            if(c != null){
+                try{
+                    c.close();
+                } catch (SQLException e){}
+            }
+        }
     }
 
     public void add (User user) throws ClassNotFoundException, SQLException{
@@ -118,7 +140,7 @@ public class UserDao {
         ResultSet rs = null;
 
         try {
-            c = connectionMaker.makeConnection();
+            c = dataSource.getConnection();
             pstmt = c.prepareStatement(
                     "select count(*) from users");
             rs = pstmt.executeQuery();
@@ -148,7 +170,7 @@ public class UserDao {
     }
 
     public User findById(String id) throws ClassNotFoundException, SQLException{
-        Connection c = connectionMaker.makeConnection();
+        Connection c = dataSource.getConnection();
 
         PreparedStatement pstmt = c.prepareStatement(
                 "select * from users where id = ?"
