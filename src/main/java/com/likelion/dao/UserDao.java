@@ -20,43 +20,97 @@ public class UserDao {
 
     public void add (User user) throws ClassNotFoundException, SQLException{
 
-        Connection c = connectionMaker.makeConnection();
+        Connection c = null;
+        PreparedStatement ps = null;
+        try{
+            c = connectionMaker.makeConnection();
+            ps = c.prepareStatement(
+                    "insert into users(id, name, password) values (?,?,?)");
+            ps.setString(1, user.getId());
+            ps.setString(2, user.getName());
+            ps.setString(3, user.getPassword());
 
-        PreparedStatement ps = c.prepareStatement(
-                "insert into users(id, name, password) values (?,?,?)");
-        ps.setString(1, user.getId());
-        ps.setString(2, user.getName());
-        ps.setString(3, user.getPassword());
-
-        ps.executeUpdate();
-        ps.close();
-        c.close();
+            ps.executeUpdate();
+        } catch (SQLException e){
+            throw e;
+        }
+        finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 
     public void deleteAll() throws ClassNotFoundException, SQLException{
-        Connection c = connectionMaker.makeConnection();
 
-        PreparedStatement ps = c.prepareStatement(
-                "delete from users");
-        ps.executeUpdate();
-        ps.close();
-        c.close();
+        Connection c = null;
+        PreparedStatement ps = null;
+
+        try {
+            c = connectionMaker.makeConnection();
+            ps = c.prepareStatement(
+                    "delete from users");
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 
     public int getCount() throws ClassNotFoundException,SQLException{
-        Connection c = connectionMaker.makeConnection();
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
-        PreparedStatement ps = c.prepareStatement(
-                "select count(*) from users");
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int count = rs.getInt(1);
+        try {
+            c = connectionMaker.makeConnection();
+            ps = c.prepareStatement(
+                    "select count(*) from users");
+            rs = ps.executeQuery();
+            rs.next();
+            int count = rs.getInt(1);
+            return count;
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if(rs!=null){
+                try{
+                    rs.close();
+                }catch (SQLException e){}
+            }
+            if(ps!=null){
+                try{
+                    ps.close();
+                }catch (SQLException e){}
+            }
+            if(c!=null){
+                try{
+                    c.close();
+                }catch (SQLException e){}
+            }
+        }
 
-        rs.close();
-        ps.close();
-        c.close();
-
-        return count;
     }
 
     public User findById(String id) throws ClassNotFoundException, SQLException{
