@@ -125,12 +125,14 @@ public class UserDao {
     }
 
     public void deleteAll() throws ClassNotFoundException, SQLException{
-        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
+        this.jdbcContext.executeSql("delete from users");
+
+        /*this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
                 return connection.prepareStatement("delete from users");
             }
-        });
+        });*/
 
         /*jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
