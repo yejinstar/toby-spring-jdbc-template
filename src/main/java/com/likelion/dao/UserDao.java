@@ -8,8 +8,13 @@ import java.sql.*;
 import java.util.Map;
 
 public class UserDao {
+    private JdbcContext jdbcContext;
     private DataSource dataSource;
     private ConnectionMaker connectionMaker;
+
+    public UserDao(JdbcContext jdbcContext) {
+        this.jdbcContext = jdbcContext;
+    }
 
     public UserDao() {
         this.connectionMaker = new LocalConnectionMaker();
@@ -17,6 +22,7 @@ public class UserDao {
 
     public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcContext = new JdbcContext(dataSource);
     }
 
     public UserDao(ConnectionMaker connectionMaker) {
@@ -48,7 +54,7 @@ public class UserDao {
     }
 
     public void add (User user) throws ClassNotFoundException, SQLException{
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(
@@ -59,6 +65,18 @@ public class UserDao {
                 return ps;
             }
         });
+
+        /*jdbcContextWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO users(id, name, password) values(?, ?, ?)");
+                ps.setString(1, user.getId());
+                ps.setString(2, user.getName());
+                ps.setString(3, user.getPassword());
+                return ps;
+            }
+        });*/
 
         /*AddStrategy addStrategy = new AddStrategy(user);
         jdbcContextWithStatementStrategy(addStrategy);*/
@@ -107,12 +125,19 @@ public class UserDao {
     }
 
     public void deleteAll() throws ClassNotFoundException, SQLException{
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
                 return connection.prepareStatement("delete from users");
             }
         });
+
+        /*jdbcContextWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                return connection.prepareStatement("delete from users");
+            }
+        });*/
 
         /*DeleteAllStrategy deleteAllStrategy = new DeleteAllStrategy();
         jdbcContextWithStatementStrategy(deleteAllStrategy);*/
