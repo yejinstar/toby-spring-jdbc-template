@@ -22,7 +22,7 @@ class UserDaoTest {
     }
 
     @Test
-    @DisplayName("executeSql 적용 ")
+    @DisplayName("findById에 try-catch 적용 ")
     void addAndGet() throws SQLException, ClassNotFoundException {
         //DaoFactory daoFactory = new DaoFactory();
         //UserDao userDao = context.getBean("userDao", UserDao.class);

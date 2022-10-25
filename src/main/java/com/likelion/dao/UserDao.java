@@ -2,12 +2,15 @@ package com.likelion.dao;
 
 import com.likelion.domain.User;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Map;
 
 public class UserDao {
+    private JdbcTemplate jdbcTemplate;
     private JdbcContext jdbcContext;
     private DataSource dataSource;
     private ConnectionMaker connectionMaker;
@@ -22,7 +25,8 @@ public class UserDao {
 
     public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.jdbcContext = new JdbcContext(dataSource);
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+//        this.jdbcContext = new JdbcContext(dataSource);
     }
 
     public UserDao(ConnectionMaker connectionMaker) {
@@ -54,7 +58,11 @@ public class UserDao {
     }
 
     public void add (User user) throws ClassNotFoundException, SQLException{
-        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
+        this.jdbcTemplate.update(
+                "INSERT INTO users(id, name, password) values(?, ?, ?)",
+                user.getId(),user.getName(), user.getPassword()
+        );
+        /*this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(
@@ -64,7 +72,7 @@ public class UserDao {
                 ps.setString(3, user.getPassword());
                 return ps;
             }
-        });
+        });*/
 
         /*jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
@@ -125,7 +133,8 @@ public class UserDao {
     }
 
     public void deleteAll() throws ClassNotFoundException, SQLException{
-        this.jdbcContext.executeSql("delete from users");
+        this.jdbcTemplate.update("delete from users");
+        /*this.jdbcContext.executeSql("delete from users");*/
 
         /*this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
@@ -181,7 +190,12 @@ public class UserDao {
     }
 
     public int getCount() throws ClassNotFoundException,SQLException{
-        Connection c = null;
+        return this.jdbcTemplate.queryForObject(
+                "select count(*) from users",
+                Integer.class
+        );
+
+        /*Connection c = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -211,28 +225,61 @@ public class UserDao {
                     c.close();
                 }catch (SQLException e){}
             }
-        }
-
+        }*/
     }
 
     public User findById(String id) throws ClassNotFoundException, SQLException{
-        Connection c = dataSource.getConnection();
+        String sql = "SELECT id, name, password FROM users WHERE id = ?";
+        RowMapper<User> rowMapper = new RowMapper<User>() {
+            @Override
+            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                User user = new User(
+                        rs.getString("id"), rs.getString("name"),
+                        rs.getString("password")
+                );
+                return user;
+            }
+        };
+        return this.jdbcTemplate.queryForObject(sql,rowMapper,id);
 
-        PreparedStatement pstmt = c.prepareStatement(
-                "select * from users where id = ?"
-        );
-        pstmt.setString(1,id);
+        /*Connection c = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
 
-        ResultSet rs = pstmt.executeQuery();
-        User user = null;
-        if(rs.next()){
-            user = new User(rs.getString("id"), rs.getString("name"),
-                    rs.getString("password"));
-        }
-        rs.close();
-        pstmt.close();
-        c.close();
-        if(user == null) throw new EmptyResultDataAccessException(1);
-        return user;
+        try {
+            c = dataSource.getConnection();
+            pstmt = c.prepareStatement(
+                    "select * from users where id = ?"
+            );
+            pstmt.setString(1, id);
+
+            rs = pstmt.executeQuery();
+            User user = null;
+            if (rs.next()) {
+                user = new User(rs.getString("id"), rs.getString("name"),
+                        rs.getString("password"));
+            }
+            if (user == null) throw new EmptyResultDataAccessException(1);
+            return user;
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (rs != null){
+                try{
+                    rs.close();
+                } catch (SQLException e){}
+            }
+            if (pstmt != null){
+                try{
+                    pstmt.close();
+                } catch (SQLException e){}
+            }
+            if (c != null){
+                try{
+                    c.close();
+                } catch (SQLException e){}
+            }
+        }*/
+
     }
 }
