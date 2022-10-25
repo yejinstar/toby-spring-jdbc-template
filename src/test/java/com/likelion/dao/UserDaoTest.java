@@ -22,7 +22,7 @@ class UserDaoTest {
     }
 
     @Test
-    @DisplayName("add and get success?")
+    @DisplayName("jdbcContextWithStatementStrategy")
     void addAndGet() throws SQLException, ClassNotFoundException {
         //DaoFactory daoFactory = new DaoFactory();
         //UserDao userDao = context.getBean("userDao", UserDao.class);

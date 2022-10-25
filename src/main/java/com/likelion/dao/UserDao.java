@@ -26,8 +26,10 @@ public class UserDao {
     }
 
     public void add (User user) throws ClassNotFoundException, SQLException{
+        AddStrategy addStrategy = new AddStrategy(user);
+        jdbcContextWithStatementStrategy(addStrategy);
 
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        /*jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement pstmt = null;
@@ -38,7 +40,7 @@ public class UserDao {
                 pstmt.setString(3, user.getPassword());
                 return pstmt;
             }
-        });
+        });*/
 
         /*Connection c = null;
         PreparedStatement pstmt = null;
@@ -72,7 +74,9 @@ public class UserDao {
 
     public void deleteAll() throws ClassNotFoundException, SQLException{
 
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        DeleteAllStrategy deleteAllStrategy = new DeleteAllStrategy();
+        jdbcContextWithStatementStrategy(deleteAllStrategy);
+        /*jdbcContextWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement pstmt = null;
@@ -80,7 +84,7 @@ public class UserDao {
                         "delete from users");
                 return pstmt;
             }
-        });
+        });*/
 
         /*Connection c = null;
         PreparedStatement pstmt = null;
